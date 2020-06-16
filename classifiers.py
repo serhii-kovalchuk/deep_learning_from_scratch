@@ -26,7 +26,7 @@ class Network():
         except AttributeError:
             raise Exception(f"there is no such solver as {self.solver_name}")
     
-    # to be compartible with sklear
+    # to be compartible with sklearn
     def get_params(self, deep=True):
         return {
             "sizes": self.sizes,
@@ -35,7 +35,7 @@ class Network():
             "alpha": self.alpha,
         }
     
-     # to be compartible with sklear
+     # to be compartible with sklearn
     def set_params(self, **parameters):
         for parameter, value in parameters.items():
             setattr(self, parameter, value)
