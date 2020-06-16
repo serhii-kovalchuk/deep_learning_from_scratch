@@ -1,5 +1,4 @@
 import numpy as np
-import sklearn
 
 from sklearn.utils import shuffle
 from sklearn.ensemble import BaggingClassifier
