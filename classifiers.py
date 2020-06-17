@@ -43,8 +43,8 @@ class Network():
     def get_activation(self, z):
         return activation_functions[self.activation](z)
     
-    def get_activation_dervitive(self, a):
-        return activation_functions_derivitives[self.activation](a)
+    def get_activation_derivative(self, a):
+        return activation_functions_derivatives[self.activation](a)
     
     def feedforward(self, a):
         a_set = [a]
@@ -62,7 +62,7 @@ class Network():
     def get_cost(self, y_predicted, y_true):
         return 0.5 * (y_predicted - y_true)**2
     
-    def get_cost_derivitive(self, y_predicted, y_true):
+    def get_cost_derivative(self, y_predicted, y_true):
         return y_predicted - y_true
     
     def get_weights_and_biases_gradients_for_layer(
@@ -84,8 +84,8 @@ class Network():
         z_set, a_set = self.feedforward(x_train.T)
         
         # backpropagation
-        deltas = self.get_cost_derivitive(a_set[-1], y_train.T) * \
-            self.get_activation_dervitive(a_set[-1])
+        deltas = self.get_cost_derivative(a_set[-1], y_train.T) * \
+            self.get_activation_derivative(a_set[-1])
         # is an array of gradient vectors of the cost function 
         # with respect to the only current layer input values z
         
@@ -97,7 +97,7 @@ class Network():
             layer_size = self.sizes[i]
             
             deltas = np.dot(self.weights[i].T, deltas) * \
-                self.get_activation_dervitive(a_set[i])
+                self.get_activation_derivative(a_set[i])
             
             gradient_b[i-1], gradient_w[i-1] = \
                 self.get_weights_and_biases_gradients_for_layer(
@@ -181,7 +181,7 @@ def sigmoid(z):
     return 1.0/(1.0 + np.exp(-z))
 
 
-def sigmoid_derivitive(sigmoid_z):
+def sigmoid_derivative(sigmoid_z):
     return sigmoid_z * (1 - sigmoid_z)
 
 
@@ -195,7 +195,7 @@ def relu(z):
     return np.maximum(z_zeros, np.minimum(z, z_max))
 
 
-def relu_derivitive(relu_z):
+def relu_derivative(relu_z):
     relu_z[relu_z > 0] = 1
     
     return relu_z
@@ -205,7 +205,7 @@ def tanh(z):
     return np.tanh(z)
 
 
-def tanh_derivitive(tanh_z):
+def tanh_derivative(tanh_z):
     return 1 - tanh_z ** 2
 
 
@@ -215,8 +215,8 @@ activation_functions = {
     "sigmoid": sigmoid
 }
 
-activation_functions_derivitives = {
-    "relu": relu_derivitive,
-    "tanh": tanh_derivitive,
-    "sigmoid": sigmoid_derivitive
+activation_functions_derivatives = {
+    "relu": relu_derivative,
+    "tanh": tanh_derivative,
+    "sigmoid": sigmoid_derivative
 }
