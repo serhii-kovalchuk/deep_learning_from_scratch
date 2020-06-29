@@ -28,10 +28,10 @@ network_clf.fit(
     minibatch_size=400
 )
 
-print("network clasifier train score:", network_clf.score(x_train, y_train))
-print("network clasifier test score:", network_clf.score(x_test, y_test))
+print("network classifier train score:", network_clf.score(x_train, y_train))
+print("network classifier test score:", network_clf.score(x_test, y_test))
 
-network_clf = Network([64, 50, 10], activation="sigmoid", alpha=0.16)
+network_clf = Network([64, 50, 10], activation="sigmoid", alpha=0.3)
 bagging_clf = BaggingClassifier(
     base_estimator=network_clf,
     n_estimators=25,
@@ -40,7 +40,7 @@ bagging_clf = BaggingClassifier(
     n_jobs=-1
 ).fit(x_train, y_train)
 
-print("bagging network clasifier train score:", bagging_clf.score(x_train, y_train))
-print("bagging network clasifier test score:", bagging_clf.score(x_test, y_test))
+print("bagging network classifier train score:", bagging_clf.score(x_train, y_train))
+print("bagging network classifier test score:", bagging_clf.score(x_test, y_test))
 
 
