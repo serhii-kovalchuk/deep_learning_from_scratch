@@ -1,11 +1,12 @@
+from copy import copy
+
 import numpy as np
 
 from sklearn.utils import shuffle
-from sklearn.ensemble import BaggingClassifier
 from sklearn.preprocessing import OneHotEncoder
 
 
-class Network():
+class Network:
     
     def __init__(self, sizes, **kwargs):
         self.num_layers = len(sizes)
@@ -25,7 +26,7 @@ class Network():
         except AttributeError:
             raise Exception(f"there is no such solver as {self.solver_name}")
     
-    # to be compartible with sklearn
+    # to be compatible with sklearn
     def get_params(self, deep=True):
         return {
             "sizes": self.sizes,
@@ -34,7 +35,7 @@ class Network():
             "alpha": self.alpha,
         }
     
-     # to be compartible with sklearn
+    # to be compatible with sklearn
     def set_params(self, **parameters):
         for parameter, value in parameters.items():
             setattr(self, parameter, value)
@@ -112,25 +113,37 @@ class Network():
         etha = kwargs.get("etha", 3.0)
         n_epoches = kwargs.get("n_epoches", 7000)
         minibatch_size = kwargs.get("minibatch_size", y_train.shape[0])
-        
+
+        validation_set = kwargs.get("validation", None)
+        if validation_set:
+            max_val_score = 0
+            best_epoch = None
+            best_model = None
+            x_val, y_val = validation_set
+            val_patience = kwargs.get("val_patience", 10)
+
         n = len(x_train)
-        
-        for i in range(n_epoches):
-            x_batch, y_batch = shuffle(
-                x_train, 
-                y_train, 
-                n_samples=minibatch_size
-            )
+
+        for epoch in range(n_epoches):
+            x_batch, y_batch = shuffle(x_train, y_train, n_samples=minibatch_size)
 
             # gradient with respect to weights and biases
-            gradient_w, gradient_b = self.backpropagate(
-                x_batch, 
-                y_batch, 
-                etha
-            )
-            
+            gradient_w, gradient_b = self.backpropagate(x_batch, y_batch, etha)
+
             self.weights = [w - etha*gw for w, gw in zip(self.weights, gradient_w)]
             self.biases = [b - etha*gb for b, gb in zip(self.biases, gradient_b)]
+
+            if validation_set:
+                val_score = self.score(x_val, y_val)
+                if val_score > max_val_score:
+                    max_val_score = val_score
+                    best_epoch = epoch
+                    best_model = copy([self.weights, self.biases])
+
+                if val_patience < epoch - best_epoch:
+                    self.weights, self.biases = best_model
+
+                    break
     
     def newton_method(self, x_train, y_train, **kwargs):
         raise NotImplementedError("solver is not implemented")
