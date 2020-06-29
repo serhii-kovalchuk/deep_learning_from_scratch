@@ -18,12 +18,11 @@ digits = load_digits()
 
 x_train, y_train, x_val, y_val, x_test, y_test = split_data_sets(digits)
 
-network_clf = Network([64, 50, 10], activation="sigmoid", alpha=0.16)
+network_clf = Network([64, 50, 10], activation="sigmoid", alpha=0.3)
 network_clf.fit(
     x_train,
     y_train,
     validation=(x_val, y_val),
-    val_patience=300,
     etha=3,
     n_epoches=7000,
     minibatch_size=400

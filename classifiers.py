@@ -50,15 +50,14 @@ class Network:
     def feedforward(self, a):
         a_set = [a]
         z_set = []
-        
+
         for w, b in zip(self.weights, self.biases):
             z = np.dot(w, a) + b
             z_set.append(z)
-            
             a = self.get_activation(z)
             a_set.append(a)
-        
-        return (z_set, a_set)
+
+        return z_set, a_set
     
     def get_cost(self, y_predicted, y_true):
         return 0.5 * (y_predicted - y_true)**2
@@ -66,9 +65,7 @@ class Network:
     def get_cost_derivative(self, y_predicted, y_true):
         return y_predicted - y_true
     
-    def get_weights_and_biases_gradients_for_layer(
-            self, layer_i, deltas, activations):
-        
+    def get_weights_and_biases_gradients_for_layer(self, layer_i, deltas, activations):
         gradient_b = deltas.sum(1).reshape((-1, 1))
         gradient_w = np.dot(deltas, activations.T) + \
             self.alpha * self.weights[layer_i]   # regularization
@@ -81,28 +78,23 @@ class Network:
         gradient_w = [0] * len(self.weights)
         gradient_b = [0] * len(self.biases)
         
-        # forward pass
+        # Forward pass
         z_set, a_set = self.feedforward(x_train.T)
         
-        # backpropagation
+        # Reverse-mode automatic differentiation
+
+        # cost gradients with respect to the only current layer input values z
         deltas = self.get_cost_derivative(a_set[-1], y_train.T) * \
             self.get_activation_derivative(a_set[-1])
-        # is an array of gradient vectors of the cost function 
-        # with respect to the only current layer input values z
-        
+
+        # last layer gradients
         gradient_b[-1], gradient_w[-1] = \
-            self.get_weights_and_biases_gradients_for_layer(
-                -1, deltas, a_set[-2])
+            self.get_weights_and_biases_gradients_for_layer(-1, deltas, a_set[-2])
         
         for i in range(self.num_layers-2, 0, -1):
-            layer_size = self.sizes[i]
-            
-            deltas = np.dot(self.weights[i].T, deltas) * \
-                self.get_activation_derivative(a_set[i])
-            
+            deltas = np.dot(self.weights[i].T, deltas) * self.get_activation_derivative(a_set[i])
             gradient_b[i-1], gradient_w[i-1] = \
-                self.get_weights_and_biases_gradients_for_layer(
-                    i-1, deltas, a_set[i-1])
+                self.get_weights_and_biases_gradients_for_layer(i-1, deltas, a_set[i-1])
         
         return (
             np.array(gradient_w) / training_instances_number, 
@@ -120,9 +112,7 @@ class Network:
             best_epoch = None
             best_model = None
             x_val, y_val = validation_set
-            val_patience = kwargs.get("val_patience", 10)
-
-        n = len(x_train)
+            val_patience = kwargs.get("val_patience", None)
 
         for epoch in range(n_epoches):
             x_batch, y_batch = shuffle(x_train, y_train, n_samples=minibatch_size)
@@ -140,10 +130,11 @@ class Network:
                     best_epoch = epoch
                     best_model = copy([self.weights, self.biases])
 
-                if val_patience < epoch - best_epoch:
+                if val_patience and val_patience < epoch - best_epoch:
                     self.weights, self.biases = best_model
-
                     break
+
+        self.weights, self.biases = best_model
     
     def newton_method(self, x_train, y_train, **kwargs):
         raise NotImplementedError("solver is not implemented")
@@ -200,10 +191,9 @@ def sigmoid_derivative(sigmoid_z):
 
 infinity = float("inf")
 
+
 def relu(z):
-    max_value = infinity
     z_zeros = np.zeros(z.shape)
-    # return np.maximum(z_zeros, z)
     z_max = np.full(z.shape, 1)
     return np.maximum(z_zeros, np.minimum(z, z_max))
 
